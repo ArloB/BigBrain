@@ -1,0 +1,20 @@
+.root {
+  display: flex;
+  justify-content: space-between;
+  flex: 100%;
+  max-width: 750px;
+  margin-bottom: 5px;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  flex: 1 0 auto;
+}
+
+.icon {
+  width: 151px;
+}

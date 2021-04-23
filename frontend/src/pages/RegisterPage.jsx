@@ -2,11 +2,11 @@ import React from 'react'
 import axios from 'axios'
 import PropTypes from 'prop-types'
 import { Redirect } from 'react-router-dom'
-import AuthContext from '../../components/AuthProvider'
+import AuthContext from '../components/AuthProvider'
 
 import { Container, Box, Button, Typography, TextField, Grid, Link } from '@material-ui/core'
 
-import '../SharedForm.css'
+import './SharedForm.css'
 
 const RegisterPage = ({ setAuth, ...props }) => {
   const handleSubmit = (event) => {
@@ -20,13 +20,13 @@ const RegisterPage = ({ setAuth, ...props }) => {
       .then((res) => {
         setAuth(res.data.token)
         props.history.push('/')
-      })
+      }).catch(() => {})
   }
 
   const token = React.useContext(AuthContext)
 
   if (token) {
-    return <Redirect to="/login"/>
+    return <Redirect to="/"/>
   } else {
     return (
       <Container>

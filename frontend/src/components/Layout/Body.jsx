@@ -1,4 +1,7 @@
 import React from 'react'
+import PropTypes from 'prop-types'
+
+import './Layout.css'
 
 const Body = ({ children }) => {
   return (
@@ -7,3 +10,9 @@ const Body = ({ children }) => {
     </div>
   )
 }
+
+Body.propTypes = {
+  children: PropTypes.object
+}
+
+export default Body
