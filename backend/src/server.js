@@ -3,11 +3,14 @@ import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import { Server } from 'ws';
 
 import { InputError, AccessError, } from './error';
 import swaggerDocument from '../swagger.json';
 import {
+  sessionIdFromPlayerId,
   getEmailFromAuthorization,
+  getActiveSessionFromSessionId,
   login,
   logout,
   register,
@@ -15,7 +18,7 @@ import {
   getQuizzesFromAdmin,
   addQuiz,
   startQuiz,
-  endQuiz,
+  endSession,
   submitAnswers,
   getResults,
   assertOwnsQuiz,
@@ -31,6 +34,7 @@ import {
   getAnswers,
   hasStarted,
 } from './service';
+import { quizQuestionPublicReturn, quizQuestionGetCorrectAnswers } from './custom';
 
 const app = express();
 
@@ -116,21 +120,32 @@ app.delete('/admin/quiz/:quizid', catchErrors(authed(async (req, res, email) => 
 app.post('/admin/quiz/:quizid/start', catchErrors(authed(async (req, res, email) => {
   const { quizid, } = req.params;
   await assertOwnsQuiz(email, quizid);
-  await startQuiz(quizid);
-  return res.status(200).json({});
+  const sessionid = await startQuiz(quizid);
+  return res.status(200).json({ sessionid, });
 })));
 
-app.post('/admin/quiz/:quizid/advance', catchErrors(authed(async (req, res, email) => {
-  const { quizid, } = req.params;
-  await assertOwnsQuiz(email, quizid);
-  const stage = await advanceQuiz(quizid);
+app.post('/admin/quiz/:sessionid/advance', catchErrors(authed(async (req, res, email) => {
+  const { sessionid, } = req.params;
+  await assertOwnsSession(email, sessionid);
+  const stage = await advanceQuiz(sessionid, session => {
+    ws_server.broadcastToSession(client => client.send(JSON.stringify({ type: 'timeup', correct: JSON.stringify(quizQuestionGetCorrectAnswers(session.questions[session.position]).sort()) === JSON.stringify(session.players[client.pid].answers[session.position].answerIds.sort()) })), sessionid)
+  })
+    .then(data => {
+      if (data.question) {
+        ws_server.broadcastToSession(client => client.send(JSON.stringify({ type: 'advance', question: data.question })), sessionid)
+      } else {
+        ws_server.broadcastToSession(client => client.send(JSON.stringify({ type: 'finished' })), sessionid)
+      }
+
+      return data.stage
+    })
   return res.status(200).json({ stage, });
 })));
 
-app.post('/admin/quiz/:quizid/end', catchErrors(authed(async (req, res, email) => {
-  const { quizid, } = req.params;
-  await assertOwnsQuiz(email, quizid);
-  await endQuiz(quizid);
+app.post('/admin/quiz/:sessionid/end', catchErrors(authed(async (req, res, email) => {
+  const { sessionid, } = req.params;
+  await assertOwnsSession(email, sessionid);
+  await endSession(sessionid).then(() => ws_server.broadcastToSession(client => client.send(JSON.stringify({ type: 'finished' })), sessionid));
   return res.status(200).send({});
 })));
 
@@ -175,7 +190,9 @@ app.get('/play/:playerid/answer', catchErrors(async (req, res) => {
 app.put('/play/:playerid/answer', catchErrors(async (req, res) => {
   const { playerid, } = req.params;
   const { answerIds, } = req.body;
-  await submitAnswers(playerid, answerIds);
+  await submitAnswers(playerid, answerIds).then(() => {
+    ws_server.sendAdmin(JSON.stringify({ type: 'answered'}), sessionIdFromPlayerId(playerid))
+  });
   return res.status(200).send({});
 }));
 
@@ -200,4 +217,83 @@ const server = app.listen(port, () => {
   console.log(`For API docs, navigate to http://localhost:${port}`);
 });
 
-export default server;
+const ws_server = new Server({ server: server });
+
+const users = {}
+const admins = {}
+
+ws_server.broadcastToSession = (fn, sid) => {
+  if (users[sid]) {
+    users[sid].forEach(client => fn(client))
+  }
+}
+
+ws_server.sendAdmin = (msg, sid) => {
+  if (admins[sid]) {
+    admins[sid].send(msg)
+  }
+}
+
+ws_server.on('connection', ws => {
+  ws.on('message', (msg) => {
+      const data = JSON.parse(msg)
+
+      console.log(data)
+
+      switch (data.type) {
+        case 'pjoin':
+          users[data.session] ? users[data.session].push(ws) : users[data.session] = [ws]
+          playerJoin(data.name, data.session)
+            .then(pid => {
+              ws.send(JSON.stringify({ type: "pjoinr", pid: pid }))
+              ws.pid = pid
+            })
+            ws_server.sendAdmin(JSON.stringify({type: 'joined', name: data.name}), data.session)
+          break
+        case 'started':
+          admins[data.sid] = ws
+          break
+        case 'preconn':
+          let session = {}
+          let id = -1
+
+          try {
+            id = sessionIdFromPlayerId(data.pid)
+            session = getActiveSessionFromSessionId(id)
+            ws.pid = id
+          } catch {
+            ws.send(JSON.stringify({type: 'finished'}))
+            break
+          }
+          
+          if (session.answerAvailable) {
+            ws.send(JSON.stringify({ type: 'timeup', correct: JSON.stringify(quizQuestionGetCorrectAnswers(session.questions[session.position]).sort()) === JSON.stringify(session.players[playerId].answers[session.position].answerIds.sort()) }))
+          } else {
+            ws.send(JSON.stringify({ type: 'advance', question: quizQuestionPublicReturn(session.questions[session.position]) }))
+          }
+
+          users[id] ? users[id].push(ws) : users[id] = [ws]
+          break
+      }
+  })
+
+  ws.on('close', () => {
+    if (ws.pid) {
+      delete ws.pid
+    }
+
+    for (const p in users) {
+      const ind = users[p].findIndex(el => { return el === ws })
+
+      if (ind !== -1) {
+        if (users[p].length > 1) {
+          users[p].splice(ind, 1)
+        } else {
+          delete users[p]
+        }
+      }
+    }
+  })
+})
+
+export default server

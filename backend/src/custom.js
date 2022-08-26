@@ -4,13 +4,11 @@
  to return to a "player"
 */
 export const quizQuestionPublicReturn = question => {
-  console.log('See question: ', question);
   return {
     "multiple_choice": question.multiple_choice,
-    "question": question.question,
+    "answers": quizQuestionGetAnswers(question),
     "time_limit": question.time_limit,
-    "worth": question.worth,
-    "graphic": question.graphic
+    "worth": question.worth
   };
 };
 
@@ -19,12 +17,14 @@ export const quizQuestionPublicReturn = question => {
  the correct answers (minimum 1).
 */
 export const quizQuestionGetCorrectAnswers = question => {
-  answers = []
-  for (x in question.answers) {
+  const answers = []
+  
+  for (const x in question.answers) {
     if (question.answers[x].correct) {
-      answers.push(question.answers[x])
+      answers.push(question.answers[x].id)
     }
   }
+  
   return answers;
 };
 
@@ -33,10 +33,12 @@ export const quizQuestionGetCorrectAnswers = question => {
  all of the answers, correct or incorrect.
 */
 export const quizQuestionGetAnswers = question => {
-  answers = []
-  for (x in question.answers) {
-    answers.push(question.answers[x])
+  let answers = []
+
+  for (const x in question.answers) {
+    answers.push(question.answers[x].id)
   }
+  
   return answers;
 };
 

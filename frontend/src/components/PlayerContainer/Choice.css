@@ -1,0 +1,47 @@
+.btns {
+  display: flex;
+  flex: 1 0 auto;
+  flex-flow: row wrap;
+}
+
+.btn2 {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 0%;
+  overflow-y: visible;
+  width: 100%;
+}
+
+.btn3 {
+  display: flex;
+  flex: 1 1 0%;
+  flex-flow: column wrap;
+  box-sizing: border-box;
+}
+
+.btns>button {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: calc(50% - 16px);
+  max-width: 100%;
+  margin: 8px;
+  position: relative;
+  box-shadow: rgba(0 0 0 / 20%) 0px -6px 0px 0px inset;
+  vertical-align: bottom;
+  padding: 0px 16px 4px;
+}
+
+.choiceroot {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  flex: 1 0 auto;
+  overflow-x: hidden;
+}
+
+html, body, #root, #root>div {
+  height: 100%
+}

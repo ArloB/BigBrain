@@ -2,13 +2,13 @@ import React from 'react'
 
 import axios from 'axios'
 import AuthContext from '../components/AuthProvider'
-import { useHistory } from 'react-router'
-import { Box, Button, Container, TextField, Typography } from '@material-ui/core'
+import { useNavigate } from 'react-router'
+import { Box, Button, Container, TextField, Typography } from '@mui/material'
 import AdminLayout from '../components/Layout'
 
-const CreateGamePage = (props) => {
-  const token = React.useContext(AuthContext)
-  const history = useHistory()
+const CreateGamePage = () => {
+  const token = React.useContext(AuthContext).token
+  const navigate = useNavigate()
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -16,7 +16,7 @@ const CreateGamePage = (props) => {
 
     axios.post('/admin/quiz/new', { name }, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => {
-        history.push(`/edit/${r.data.quizId}`)
+        navigate(`/edit/${r.data.quizId}`)
       }).catch(() => {})
   }
 

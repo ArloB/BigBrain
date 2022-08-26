@@ -1,14 +1,16 @@
 import React from 'react'
 import axios from 'axios'
 import PropTypes from 'prop-types'
-import { Redirect } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import AuthContext from '../components/AuthProvider'
 
-import { Container, Box, Button, Typography, TextField, Grid, Link } from '@material-ui/core'
+import { Container, Box, Button, Typography, TextField, Grid, Link } from '@mui/material'
 
 import './SharedForm.css'
 
-const RegisterPage = ({ setAuth, ...props }) => {
+const RegisterPage = ({ setAuth }) => {
+  const navigate = useNavigate()
+
   const handleSubmit = (event) => {
     event.preventDefault();
 
@@ -19,14 +21,14 @@ const RegisterPage = ({ setAuth, ...props }) => {
     axios.post('/admin/auth/register', { name, email, password })
       .then((res) => {
         setAuth(res.data.token)
-        props.history.push('/')
+        navigate('/')
       }).catch(() => {})
   }
 
-  const token = React.useContext(AuthContext)
+  const token = React.useContext(AuthContext).token
 
   if (token) {
-    return <Redirect to="/"/>
+    return <Navigate to="/"/>
   } else {
     return (
       <Container>

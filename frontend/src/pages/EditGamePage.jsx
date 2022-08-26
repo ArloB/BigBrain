@@ -3,16 +3,15 @@ import PropTypes from 'prop-types'
 
 import axios from 'axios'
 import AuthContext from '../components/AuthProvider'
-import { useHistory } from 'react-router'
-import { Box, Button, Container, TextField, Typography } from '@material-ui/core'
+import { useParams } from 'react-router'
+import { Box, Button, Container, TextField, Typography } from '@mui/material'
 import AdminLayout from '../components/Layout'
 import QuestionContainer from '../components/QuestionContainer'
 
-const EditGamePage = ({ match }) => {
+const EditGamePage = () => {
   const [questions, setQuestions] = React.useState([])
-  const gid = match.params.gid
-  const token = React.useContext(AuthContext)
-  const history = useHistory()
+  const { gid } = useParams()
+  const token = React.useContext(AuthContext).token
 
   useEffect(() => {
     axios.get(`admin/quiz/${gid}`, { headers: { Authorization: `Bearer ${token}` } })
@@ -32,9 +31,11 @@ const EditGamePage = ({ match }) => {
     }
 
     axios.put(`/admin/quiz/${gid}`, { name, thumbnail }, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => {
-        history.push('/')
-      }).catch(() => {})
+      .catch(() => {})
+  }
+
+  const removeQuestion = id => {
+    setQuestions([...questions.filter(question => question.id !== id)])
   }
 
   return (
@@ -58,7 +59,7 @@ const EditGamePage = ({ match }) => {
             </form>
           </Box>
         </Container>
-        <QuestionContainer questions={questions} gid={gid} />
+        <QuestionContainer questions={questions} gid={gid} remove={removeQuestion}/>
       </>
     } />
   )

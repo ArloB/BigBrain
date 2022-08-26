@@ -733,14 +733,14 @@
                 }
             }
         },
-        "/admin/quiz/{quizid}/advance": {
+        "/admin/quiz/{sessionid}/advance": {
             "post": {
                 "summary": "Advance the game on to the next question",
                 "security": [{ "bearerAuth": [] }],
                 "tags": [ "Admin Quiz Management" ],
                 "parameters": [
                     { "$ref": "#/components/parameters/Authorization" },
-                    { "$ref": "#/components/parameters/QuizIdQuery" }
+                    { "$ref": "#/components/parameters/SessionIdQuery" }
                 ],
                 "responses": {
                     "200": { "$ref": "#/components/responses/200/Empty" },
@@ -749,14 +749,14 @@
                 }
             }
         },
-        "/admin/quiz/{quizid}/end": {
+        "/admin/quiz/{sessionid}/end": {
             "post": {
                 "summary": "End the active session/game for a BigBrain quiz",
                 "security": [{ "bearerAuth": [] }],
                 "tags": [ "Admin Quiz Management" ],
                 "parameters": [
                     { "$ref": "#/components/parameters/Authorization" },
-                    { "$ref": "#/components/parameters/QuizIdQuery" }
+                    { "$ref": "#/components/parameters/SessionIdQuery" }
                 ],
                 "responses": {
                     "200": { "$ref": "#/components/responses/200/Empty" },

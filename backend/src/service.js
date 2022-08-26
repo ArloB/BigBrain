@@ -208,8 +208,8 @@ export const startQuiz = quizId => quizLock((resolve, reject) => {
   }
 });
 
-export const advanceQuiz = quizId => quizLock((resolve, reject) => {
-  const session = getActiveSessionFromQuizIdThrow(quizId);
+export const advanceQuiz = (sessionId, callback) => sessionLock((resolve, reject) => {
+  const session = getActiveSessionFromSessionId(sessionId);
   if (!session.active) {
     reject(new InputError('Cannot advance a quiz that is not active'));
   } else {
@@ -218,7 +218,8 @@ export const advanceQuiz = quizId => quizLock((resolve, reject) => {
     session.answerAvailable = false;
     session.isoTimeLastQuestionStarted = new Date().toISOString();
     if (session.position >= totalQuestions) {
-      endQuiz(quizId);
+      endSession(sessionId);
+      resolve({ stage: session.position })
     } else {
       const questionDuration = quizQuestionGetDuration(session.questions[session.position]);
       if (sessionTimeouts[session.id]) {
@@ -226,14 +227,16 @@ export const advanceQuiz = quizId => quizLock((resolve, reject) => {
       }
       sessionTimeouts[session.id] = setTimeout(() => {
         session.answerAvailable = true;
+        callback(session)
       }, questionDuration * 1000);
+
+      resolve({ stage: session.position, question: quizQuestionPublicReturn(session.questions[session.position]), status: session.status });
     }
-    resolve(session.position);
   }
 });
 
-export const endQuiz = quizId => quizLock((resolve, reject) => {
-  const session = getActiveSessionFromQuizIdThrow(quizId);
+export const endSession = sessionId => sessionLock((resolve, reject) => {
+  const session = getActiveSessionFromSessionId(sessionId);
   session.active = false;
   resolve();
 });
@@ -266,7 +269,7 @@ const getActiveSessionIdFromQuizId = quizId => {
 const getInactiveSessionsIdFromQuizId = quizId =>
   Object.keys(sessions).filter(sid => sessions[sid].quizId === quizId && !sessions[sid].active).map(s => parseInt(s, 10));
 
-const getActiveSessionFromSessionId = sessionId => {
+export const getActiveSessionFromSessionId = sessionId => {
   if (sessionId in sessions) {
     if (sessions[sessionId].active) {
       return sessions[sessionId];
@@ -275,7 +278,7 @@ const getActiveSessionFromSessionId = sessionId => {
   throw new InputError('Session ID is not an active session');
 };
 
-const sessionIdFromPlayerId = playerId => {
+export const sessionIdFromPlayerId = playerId => {
   for (const sessionId of Object.keys(sessions)) {
     if (Object.keys(sessions[sessionId].players).filter(p => p === playerId).length > 0) {
       return sessionId;
@@ -360,6 +363,7 @@ export const getQuestion = playerId => sessionLock((resolve, reject) => {
   } else {
     resolve({
       ...quizQuestionPublicReturn(session.questions[session.position]),
+      "pos": session.position,
       isoTimeLastQuestionStarted: session.isoTimeLastQuestionStarted,
     });
   }

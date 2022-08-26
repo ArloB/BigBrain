@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Button, Checkbox, FormControlLabel, TextField } from '@material-ui/core'
+import { Button, Checkbox, FormControlLabel, TextField } from '@mui/material'
 
 const QuestionForm = (props) => {
   const [checked, setChecked] = React.useState(false)
@@ -17,7 +17,7 @@ const QuestionForm = (props) => {
           <Checkbox id={`check-${props.id}`} checked={checked} onChange={handleChange} color="primary"/>
       } label="Correct Answer" style={{ gridColumn: 'auto / span 2' }}/>
       {props.delete
-        ? <Button onClick={() => props.delete(props.id)} variant="contained" color="secondary"
+        ? <Button onClick={() => props.delete(props.id)} variant="contained" color="error"
                               style={{
                                 gridColumn: 'auto / span 2',
                                 margin: '25px'

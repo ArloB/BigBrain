@@ -1,24 +1,24 @@
 import React, { useContext } from 'react'
 import PropTypes from 'prop-types'
 
-import { Box, Button, Checkbox, Container, FormControlLabel, TextField, Typography } from '@material-ui/core'
+import { Box, Button, Checkbox, Container, FormControlLabel, TextField, Typography } from '@mui/material'
 import AdminLayout from '../components/Layout'
 import QuestionForm from '../components/QuestionForm'
 
 import './CreateQuestionPage.css'
 import axios from 'axios'
 import AuthContext from '../components/AuthProvider'
-import { useHistory } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 
-const CreateQuestionPage = ({ match }) => {
+const CreateQuestionPage = () => {
   const [checked, setChecked] = React.useState(false)
   const [answers, setAnswers] = React.useState([])
   const [keyId, setKeyId] = React.useState(0)
 
-  const gid = match.params.gid
-  const token = useContext(AuthContext)
+  const { gid } = useParams()
+  const token = useContext(AuthContext).token
 
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -60,7 +60,7 @@ const CreateQuestionPage = ({ match }) => {
         newQuestion.id = max === -1 ? 1 : parseInt(max.id) + 1
         questions.push(newQuestion)
         axios.put(`/admin/quiz/${gid}`, { questions }, { headers: { Authorization: `Bearer ${token}` } })
-          .then(_ => history.push(`/edit/${gid}/${newQuestion.id}`))
+          .then(_ => navigate(`/edit/${gid}/`))
       }).catch(() => {})
   }
 
@@ -101,7 +101,7 @@ const CreateQuestionPage = ({ match }) => {
             {answers.map(a => {
               return <QuestionForm key={a} delete={() => handleDelete(a)} id={a} />
             })}
-            {answers.length < 6 ? <Button onClick={handleNewAnswer} fullWidth variant="contained" color="secondary" style={{ gridColumn: 'auto / span 6' }}>Add another answer</Button> : null}
+            {answers.length < 6 ? <Button onClick={handleNewAnswer} fullWidth variant="contained" color="error" style={{ gridColumn: 'auto / span 6' }}>Add another answer</Button> : null}
             <br />
             <Button type="submit" fullWidth variant="contained" color="primary" style={{ gridColumn: 'auto / span 6', height: 56 }} disabled={answers.length < 2}>
               Create new question

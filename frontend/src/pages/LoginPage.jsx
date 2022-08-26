@@ -2,11 +2,14 @@ import React from 'react'
 import axios from 'axios'
 import PropTypes from 'prop-types'
 
-import { Container, Box, Button, Typography, TextField, Grid, Link } from '@material-ui/core'
+import { Container, Box, Button, Typography, TextField, Grid, Link } from '@mui/material'
 
 import './SharedForm.css'
+import { useNavigate } from 'react-router-dom'
 
 const LoginPage = ({ setAuth, ...props }) => {
+  const navigate = useNavigate()
+
   const handleSubmit = (event) => {
     event.preventDefault();
 
@@ -16,7 +19,7 @@ const LoginPage = ({ setAuth, ...props }) => {
     axios.post('/admin/auth/login', { email, password })
       .then((res) => {
         setAuth(res.data.token)
-        props.history.push('/')
+        navigate('/')
       }).catch(() => {})
   }
 

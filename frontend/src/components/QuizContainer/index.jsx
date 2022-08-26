@@ -3,11 +3,15 @@ import PropTypes from 'prop-types'
 import QuizCard from './QuizCard'
 
 import './index.css'
-import { Card, Typography } from '@material-ui/core'
+import { Card, Typography } from '@mui/material'
 import { Link } from 'react-router-dom'
 
-const QuizContainer = (props) => {
-  const quizzes = props.quizzes.quizzes.map(x => <QuizCard quiz={x} key={x.id}/>)
+const QuizContainer = ({ quizzes, setQuizzes, ws }) => {
+  const removeQuiz = id => {
+    setQuizzes([...quizzes.filter(v => v.id !== id)])
+  }
+
+  const qs = quizzes.map(quiz => <QuizCard quiz={quiz} key={quiz.id} remove={removeQuiz} ws={ws}/>)
 
   return (
     <div className="quiz-container">
@@ -18,13 +22,15 @@ const QuizContainer = (props) => {
           </Typography>
         </Card>
       </Link>
-      {quizzes}
+      {qs}
     </div>
   )
 }
 
 QuizContainer.propTypes = {
-  quizzes: PropTypes.object
+  quizzes: PropTypes.arrayOf(PropTypes.object),
+  setQuizzes: PropTypes.func,
+  ws: PropTypes.object
 }
 
 export default QuizContainer

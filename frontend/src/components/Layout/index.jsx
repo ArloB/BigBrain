@@ -6,16 +6,21 @@ import Body from './Body'
 
 import './Layout.css'
 
-const AdminLayout = ({ body }) => {
+const AdminLayout = ({ header, body }) => {
   return (
     <>
-      <Header />
+      {header || <Header />}
       <Body>{body}</Body>
     </>
   )
 }
 
+AdminLayout.defaultProps = {
+  header: null
+}
+
 AdminLayout.propTypes = {
+  header: PropTypes.object,
   body: PropTypes.object
 }
 

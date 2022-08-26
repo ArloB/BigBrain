@@ -1,13 +1,13 @@
 import React from 'react'
 import axios from 'axios'
-import { Redirect, Link } from 'react-router-dom'
+import { Navigate, Link } from 'react-router-dom'
 import AuthContext from '../AuthProvider'
-import { AppBar, Button, Toolbar, Typography } from '@material-ui/core'
+import { AppBar, Button, Toolbar, Typography } from '@mui/material'
 
 import './Layout.css'
 
-const Header = (props) => {
-  const token = React.useContext(AuthContext)
+const Header = () => {
+  const token = React.useContext(AuthContext).token
   const [loggedOut, setLoggedOut] = React.useState(false)
 
   if (loggedOut) {
@@ -15,7 +15,7 @@ const Header = (props) => {
       .catch(() => {})
 
     localStorage.removeItem('token')
-    return <Redirect to="/login"/>
+    return <Navigate to="/login"/>
   }
 
   return (

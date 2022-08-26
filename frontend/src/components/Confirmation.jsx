@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText } from '@material-ui/core';
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText } from '@mui/material';
 import PropTypes from 'prop-types'
 
 const Confirmation = (props) => {
@@ -15,7 +15,7 @@ const Confirmation = (props) => {
           <Button onClick={props.toggle} color="primary">
             Cancel
           </Button>
-          <Button onClick={props.yes} color="secondary">
+          <Button onClick={props.yes} color="error">
             Yes
           </Button>
         </DialogActions>

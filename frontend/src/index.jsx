@@ -1,12 +1,14 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App';
-import { CssBaseline } from '@material-ui/core';
+import { CssBaseline } from '@mui/material';
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.min.css'
 
-ReactDOM.render(
+const root = createRoot(document.getElementById('root'));
+
+root.render(
   <React.StrictMode>
     <CssBaseline/>
     <App />
@@ -19,6 +21,5 @@ ReactDOM.render(
       pauseOnFocusLoss
       pauseOnHover
     />
-  </React.StrictMode>,
-  document.getElementById('root'),
-);
+  </React.StrictMode>
+)
